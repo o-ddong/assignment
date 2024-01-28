@@ -1,0 +1,18 @@
+version: '1'
+services:
+ nginx:
+  image: nginx:latest
+  ports:
+   - "8000:8000"
+  volumes:
+   - ./nginx/develop:/etc/nginx/conf.d
+  depends_on:
+   - web
+ web:
+  build:
+    context: Dockerfile-develop
+    dockerfile: Dockerfile-develop/dockerfile-develop
+  volumes:
+   - static-data:/server/static
+volumes:
+ static-data:
