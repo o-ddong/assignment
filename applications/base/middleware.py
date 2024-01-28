@@ -16,6 +16,7 @@ class JsonWebTokenMiddleWare(object):
             if (
                 request.path != "/v1/user/join"
                 and request.path != "/v1/user/login"
+                and request.path != "/v1/user/refresh_token"
                 and "admin" not in request.path
             ):
                 access_token = request.headers.get("Authorization", None)

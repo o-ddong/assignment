@@ -92,3 +92,20 @@ class UsersViewSet(GenericViewSet):
 
         except ValueError:
             return operation_failure
+
+    @action(methods=['POST'], detail=False, url_path="refresh_token")
+    def jwt_refresh_token(self, request, *args, **kwargs):
+        access_token = request.data.get("access_token", None)
+        refresh_token = request.data.get("refresh_token", None)
+
+        if access_token == refresh_token:
+            return same_data_failure
+
+        results = check_jwt_equality(access_token, refresh_token)
+        if not results:
+            return invalid_token
+
+        response = operation_success
+        response.data["data"] = results
+
+        return response
