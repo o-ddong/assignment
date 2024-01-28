@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
 from applications.base.crypto import AESCipher
 from applications.base.models import TimeStampedModel
-
+from applications.users.utils import mdn_asterisk
 
 cipher = AESCipher()
 
@@ -18,7 +18,7 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, TimeStampedModel):
     name = models.CharField(max_length=15, verbose_name="이름")
-    mdn = models.CharField(max_length=11, unique=True, verbose_name="전화번호")
+    mdn = models.CharField(max_length=64, unique=True, verbose_name="전화번호")
     is_active = models.BooleanField(default=True, verbose_name="활성화 여부")
 
     objects = UserManager()
@@ -26,7 +26,7 @@ class User(AbstractBaseUser, TimeStampedModel):
     USERNAME_FIELD = 'mdn'
 
     def __str__(self):
-        return cipher.decrypt_str(self.mdn)
+        return mdn_asterisk(cipher.decrypt_str(self.mdn))
 
     class Meta:
         db_table = 'user'
