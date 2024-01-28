@@ -15,7 +15,6 @@ class JsonWebTokenMiddleWare(object):
         try:
             if (
                 request.path != "/v1/user/join"
-                and request.path != "/v1/user/login"
                 and request.path != "/v1/user/refresh_token"
                 and "admin" not in request.path
             ):
