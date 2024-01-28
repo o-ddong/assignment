@@ -9,7 +9,8 @@ from rest_framework.viewsets import GenericViewSet
 
 from applications.base.crypto import AESCipher
 from applications.base.jwt_utils import generate_jwt, check_jwt_equality
-from applications.base.messages import user_paramter_validation_message, user_mdn_validation_message
+from applications.base.messages import user_paramter_validation_message, user_mdn_validation_message, \
+    common_validation_message
 from applications.base.response import operation_success, authorization_error, operation_failure, already_exist_user, \
     invalid_mdn_format, invaild_required_field, same_data_failure, invalid_token
 from applications.users.models import User
@@ -33,6 +34,8 @@ class UsersViewSet(GenericViewSet):
             if password_matched:
                 login(request, user)
                 return operation_success
+            else:
+                return authorization_error
 
         except User.DoesNotExist:
             return authorization_error
@@ -59,19 +62,23 @@ class UsersViewSet(GenericViewSet):
             errors = serializer.errors
 
             if 'mdn' in errors:
-                mdn_errors = errors['mdn']
+                for mdn_error in errors['mdn']:
+                    if common_validation_message in mdn_error:
+                        return invaild_required_field
 
-                if user_paramter_validation_message in mdn_errors:
-                    return invaild_required_field
+                    if user_paramter_validation_message in mdn_error:
+                        return invaild_required_field
 
-                if user_mdn_validation_message in mdn_errors:
-                    return invalid_mdn_format
+                    if user_mdn_validation_message in mdn_error:
+                        return invalid_mdn_format
 
             elif 'password' in errors:
-                mdn_errors = errors['password']
+                for password_error in errors['password']:
+                    if common_validation_message in password_error:
+                        return invaild_required_field
 
-                if user_paramter_validation_message in mdn_errors:
-                    return invaild_required_field
+                    if user_paramter_validation_message in password_error:
+                        return invaild_required_field
 
         try:
             user = User.objects.create_user(mdn, password)

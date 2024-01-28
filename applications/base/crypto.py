@@ -26,6 +26,8 @@ class AESCipher:
         return data
 
     def encrypt_str(self, row):
+        if not row:
+            return row
         return self.encrypt(row).decode('utf-8')
 
     def decrypt(self, enc):

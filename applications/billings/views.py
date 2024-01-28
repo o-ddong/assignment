@@ -46,6 +46,11 @@ class ProductViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         return response
 
     def create(self, request, *args, **kwargs):
+        category = request.data.get('category')
+        size = request.data.get('size')
+        if not category or not size:
+            return invaild_required_field
+
         extra_data = {
             "user": request.user,
             "category": request.data.get('category'),
