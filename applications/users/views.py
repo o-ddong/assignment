@@ -8,12 +8,12 @@ from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
 
 from applications.base.crypto import AESCipher
-from applications.base.jwt_utils import generate_jwt
+from applications.base.jwt_utils import generate_jwt, check_jwt_equality
 from applications.base.messages import user_paramter_validation_message, user_mdn_validation_message
-from applications.base.response import operation_success, authorization_error, operation_failure, already_exist_user,\
-    invalid_mdn, required_field
+from applications.base.response import operation_success, authorization_error, operation_failure, already_exist_user, \
+    invalid_mdn_format, invaild_required_field, same_data_failure, invalid_token
 from applications.users.models import User
-from applications.users.serializers import MdnSerializer
+from applications.users.serializers import UserSerializer
 
 
 cipher = AESCipher()
@@ -54,7 +54,7 @@ class UsersViewSet(GenericViewSet):
         mdn = request.data.get('mdn')
         password = request.data.get('password')
 
-        serializer = MdnSerializer(data=request.data)
+        serializer = UserSerializer(data=request.data)
         if not serializer.is_valid():
             errors = serializer.errors
 
@@ -62,16 +62,16 @@ class UsersViewSet(GenericViewSet):
                 mdn_errors = errors['mdn']
 
                 if user_paramter_validation_message in mdn_errors:
-                    return required_field
+                    return invaild_required_field
 
                 if user_mdn_validation_message in mdn_errors:
-                    return invalid_mdn
+                    return invalid_mdn_format
 
             elif 'password' in errors:
                 mdn_errors = errors['password']
 
                 if user_paramter_validation_message in mdn_errors:
-                    return required_field
+                    return invaild_required_field
 
         try:
             user = User.objects.create_user(mdn, password)
@@ -92,5 +92,3 @@ class UsersViewSet(GenericViewSet):
 
         except ValueError:
             return operation_failure
-
-
