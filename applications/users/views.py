@@ -5,15 +5,18 @@ from django.contrib.auth.hashers import check_password
 from django.db import IntegrityError
 
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from applications.base.crypto import AESCipher
 from applications.base.jwt_utils import generate_jwt
 from applications.base.messages import user_paramter_validation_message, user_mdn_validation_message
 from applications.base.response import operation_success, authorization_error, operation_failure, already_exist_user,\
     invalid_mdn, required_field
 from applications.users.models import User
 from applications.users.serializers import MdnSerializer
+
+
+cipher = AESCipher()
 
 
 class UsersViewSet(GenericViewSet):
@@ -25,11 +28,10 @@ class UsersViewSet(GenericViewSet):
         password = request.data.get('password')
 
         try:
-            user = User.objects.get(mdn=mdn)
+            user = User.objects.get(mdn=cipher.encrypt_str(mdn))
             password_matched = check_password(password, user.password)
             if password_matched:
                 login(request, user)
-
                 return operation_success
 
         except User.DoesNotExist:
@@ -54,13 +56,22 @@ class UsersViewSet(GenericViewSet):
 
         serializer = MdnSerializer(data=request.data)
         if not serializer.is_valid():
-            errors = serializer.errors['non_field_errors'][0]
+            errors = serializer.errors
 
-            if user_paramter_validation_message in errors:
-                return required_field
+            if 'mdn' in errors:
+                mdn_errors = errors['mdn']
 
-            if user_mdn_validation_message in errors:
-                return invalid_mdn
+                if user_paramter_validation_message in mdn_errors:
+                    return required_field
+
+                if user_mdn_validation_message in mdn_errors:
+                    return invalid_mdn
+
+            elif 'password' in errors:
+                mdn_errors = errors['password']
+
+                if user_paramter_validation_message in mdn_errors:
+                    return required_field
 
         try:
             user = User.objects.create_user(mdn, password)
@@ -68,12 +79,12 @@ class UsersViewSet(GenericViewSet):
                 access_token = generate_jwt(user.id, expires_in_weeks=2)
                 refresh_token = generate_jwt(user.id, expires_in_weeks=4)
 
-                response = operation_success.data
-                response["data"] = {
+                response = operation_success
+                response.data["data"] = {
                     "access_token": access_token,
                     "refresh_token": refresh_token,
                 }
-                return Response(status=200)
+                return response
 
         except IntegrityError:
             traceback.print_exc()

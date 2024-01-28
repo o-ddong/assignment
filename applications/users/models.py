@@ -1,13 +1,16 @@
-from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
+from applications.base.crypto import AESCipher
 from applications.base.models import TimeStampedModel
 
 
+cipher = AESCipher()
+
+
 class UserManager(BaseUserManager):
-    def create_user(self, mdn, password, **extra_fields):
-        user = self.model(mdn=mdn, **extra_fields)
+    def create_user(self, mdn: str, password: str, **extra_fields) -> object:
+        user = self.model(mdn=cipher.encrypt_str(mdn), **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -21,7 +24,9 @@ class User(AbstractBaseUser, TimeStampedModel):
     objects = UserManager()
 
     USERNAME_FIELD = 'mdn'
+
     def __str__(self):
-        return self.mdn
+        return cipher.decrypt_str(self.mdn)
+
     class Meta:
         db_table = 'user'
