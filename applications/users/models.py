@@ -17,8 +17,9 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, TimeStampedModel):
-    name = models.CharField(max_length=15, verbose_name="이름")
+    name = models.CharField(max_length=15, null=True, verbose_name="이름")
     mdn = models.CharField(max_length=64, unique=True, verbose_name="전화번호")
+    password = models.CharField(max_length=128, verbose_name="비밀번호")
     is_active = models.BooleanField(default=True, verbose_name="활성화 여부")
 
     objects = UserManager()
