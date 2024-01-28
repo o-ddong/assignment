@@ -18,11 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
 
+from applications.billings.views import ProductViewSet
 from applications.users.views import UsersViewSet
 
 router = SimpleRouter(trailing_slash=False)
 
 router.register('user', UsersViewSet, 'user')
+router.register('billing/product', ProductViewSet, 'product')
 
 
 urlpatterns = [

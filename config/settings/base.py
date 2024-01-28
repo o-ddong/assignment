@@ -33,6 +33,7 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
+    'applications.billings',
     'applications.users',
 ]
 
