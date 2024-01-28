@@ -40,6 +40,10 @@ authorization_error = Response(
     status=status.HTTP_401_UNAUTHORIZED,
     data={"meta": {"code": status.HTTP_401_UNAUTHORIZED, "message": "AUTHORIZATION_ERROR"}, "data": ""}
 )
+not_found_data = Response(
+    status=status.HTTP_401_UNAUTHORIZED,
+    data={"meta": {"code": status.HTTP_404_NOT_FOUND, "message": "NOT_FOUND_DATA"}, "data": ""}
+)
 
 
 # middleware error

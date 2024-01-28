@@ -2,13 +2,14 @@ import traceback
 
 from django.core.paginator import Paginator
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin, CreateModelMixin, DestroyModelMixin, UpdateModelMixin, \
     RetrieveModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from applications.base.response import operation_success, invaild_required_field, ProductPermissionDenied, \
-    ProductNotFound, create_success
+    ProductNotFound, create_success, not_found_data
 from applications.billings.models import Product
 from applications.billings.serializers import ProductSerializer
 
@@ -85,3 +86,21 @@ class ProductViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin,
         instance = self.get_object(request)
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=['POST'], detail=False)
+    def search(self, request):
+        search_name = request.data.get('name')
+        if not search_name:
+            return invaild_required_field
+
+        product_info = Product.get_matching_products(search_name)
+        if not product_info:
+            return not_found_data
+
+        serializer = self.get_serializer(product_info)
+
+        response = operation_success
+        response.data["data"] = serializer.data
+
+        return response
+
