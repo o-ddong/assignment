@@ -10,7 +10,7 @@ CREATE TABLE `user` (
   `is_active` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `mdn` (`mdn`)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 상품 테이블 --
 CREATE TABLE `billings_product` (
@@ -29,4 +29,4 @@ CREATE TABLE `billings_product` (
   PRIMARY KEY (`id`),
   KEY `billings_product_user_id_0000001_fk_user_id` (`user_id`),
   CONSTRAINT `billings_product_user_id_0000001_fk_user_id` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
-);
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
